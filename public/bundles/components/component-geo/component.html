@@ -1,4 +1,4 @@
-<polymer-element name="ceci-geo-location" attributes="continuous text state grammar freespeech" extends="ceci-element">
+<polymer-element name="ceci-geo-location" attributes="continuous text state label value showGeo"  extends="ceci-element">
   <ceci-definition>
     {
       "tags": ["text", "utility"],
@@ -10,7 +10,7 @@
           "label": "latitude",
           "description": "geolocation.latitude"
         },
-    "lon": {
+   	 	"lon": {
           "label": "longitude",
           "description": "geolocation long"
         },
@@ -26,14 +26,20 @@
         }
       },
 	"attributes": {
+		 "label": {
+          "label": "Label",
+          "description": "Text shown on the button.",
+          "editable": "text",
+          "listener": true
+        },
+        "showGeo": {
+        "label": "Show Geolocation",
+        "description": "display the current location",
+        "editable":"boolean",
+         "listener": true
+        }
 
-	      "grammar": {
-        	  "label": "Grammar",
-	          "description": "Grammar.",
-	          "editable": "textarea"
-	      } 
-
-	}
+	   }
     }
   </ceci-definition>
   <template>
@@ -57,17 +63,19 @@
       :host([state="recording"],[state="decoding"]) #state-message {
         visibility: visible;
       }
-      :host #geo-lat {
-      display: block;
-      background-color: green;
-            height: 20px;
-      color: white;
-      }
-      :host #geo-lon {
-      display: block;
-      background-color: blue;
+      :host #geo-lat2 {
       position: relative;
       top: 100px;
+      display: block;
+      background-color: green;
+      height: 20px;
+      color: white;
+      }
+      :host #geo-lon2 {
+      display: block;
+      background-color: white;
+      //position: relative;
+      //top: 100px;
       height: 20px;
             color: white;
       }
@@ -97,13 +105,14 @@
     </style>
 
     <div id="container">
-
-      <div id="geo-lat">{{lat}}</div>
-      <div>lat lon</div>
-            <div id="state-message">{{state}}</div>
-      <div id="result-text">{{text}}</div>
-      <hr/>
-      <div id="geo-lon">{{lon}}</div>
+	
+	 <div id="latlon"	>
+     	lon: {{lon}} 
+     	<br/>
+     	lat: {{lat}}
+     	<br/>
+     	
+      </div>
     </div>
     <shadow></shadow>
     <content></content>
@@ -114,120 +123,84 @@
       state: 'idle',
       continuous: false,
       text: '',
- /* -- Lifecycle ------------------------------------------------- */
-    /* PLAN  : get the current geoloc via navigator.geolocation.getCurrentPosition */
-    /*    add it to the html and emit it via a channel  */ 
-    /* 
+     
+      geo : function() {
+          /* http://www.html5rocks.com/en/tutorials/geolocation/trip_meter/ */
+			this.super();
+          // geo stuff
+          var that = this;
     
-    
-    */
-      created: function() {
-    
-    /* http://www.html5rocks.com/en/tutorials/geolocation/trip_meter/ */
-
-    // geo stuff
-    var that = this;
-
-
-    // make a collection
-    // note addCollection should return a collection but doesnt
-
-    var collections = document.querySelector("ceci-collections");
-    var geo;
-
-    // getCollection throws undefined function if collection isn't there!
-    try {
-       geo = collections.getCollection("geo");    
-    }
-    catch(e) {
-       console.error(e);
-    }
-
-    // make geo if it's not there.
-    // exc: it's been created by another component--we really need a system service here!
-    if (!geo) {
-       console.log("adding geo");
-       collections.addCollection('geo')
-       geo = collections.getCollection("geo");
-    };
-
-    // add fields
-    geo.addField("lat");
-    geo.addField("lon");
-
-    // get geo and add cell data
-
-    window.navigator.geolocation.getCurrentPosition(function(pos) {
-       var lat,lon;
-
-    // exc. if undefined? prob just leave, let caller cope, push error
-       lat = pos.coords.latitude 
-       lon = pos.coords.longitude;
-
-    //    that.broadcast('lat',pos.coords.latitude);
-    //    that.broadcast('lon',pos.coords.longitude);
-
-    // add cell data
-
-       geo.addItem({"lat":lat,"lon":lon});
-       geo.saveData();
-
-    });
-
-
-      },    // created
-
-      ready: function () {
-        this.super();
-        
-         [
-              'start',
-              'error',
-              'end'
-          ].forEach(this.propagateEvent.bind(this));
-          this.bindResult();
+          window.navigator.geolocation.watchPosition(function(pos) {
+            var lat, lon;
+            // exc. if undefined? prob just leave, let caller cope, push error
+            lat = pos.coords.latitude
+            lon = pos.coords.longitude;
+            // for the moment, we'll use jquery
+            // but we could do pure html5: document.getElementsByTagName('body')[0].dataset.lon;
+            // or should it be ceci-app
+            $(document).data('lat',lat);
+            $(document).data('lon',lon);
+            that.lat = Math.round(lat * 1000) / 1000;
+            that.lon = Math.round(lon * 1000) / 1000;
  
+          });
+        }, //geo
+        /* -- Lifecycle ------------------------------------------------- */
+        /*  
+        - write lat/lon to data on document node when element is created. 
+        - read the location whenver the component is pinged
+        - optionally display the lat lon. 
+        
+        */
+        
+        
+         
+        created : function() {
+          this.geo(); // write lat-lon to 
 
-    var that = this;
+        }, // created
 
+        ready : function() {
+          this.super();
+         
+//          [ 'start', 'error', 'end' ].forEach(this.propagateEvent.bind(this));
+//          this.bindResult();
 
-    
-      },
-      start: function () {
-        this.recognition.start();
-        this.state = 'recording';
-      },
-      setgrammar: function () {
-        console.log('set aki' + this.getAttribute('grammar'));
-        this.grammarlist.addFromString  ( this.getAttribute('grammar') , 1 );
-        this.recognition.grammars = this.grammarlist;        
-      },      
-      stop: function () {
-        this.recognition.stop();
-        this.state = 'decoding';
-      },
-      abort: function () {
-        this.recognition.abort();
-        this.state = 'idle';
-      },
-      /* -- Events ---------------------------------------------------- */
-      propagateEvent: function (eventName) {
-          this.recognition.addEventListener(eventName, this.fire.bind(this, eventName));
-      },
-      bindResult: function() {
+		  this.geo();
+          
+
+        },
+       attached: function() {
+         console.log("ready");
+         console.log(this.showGeo);
+         if (this.showGeo) {
+        	// show the geo info here. 
+        
+         }
+         
+       },
+        /* -- Events ---------------------------------------------------- */
+        propagateEvent : function(eventName) {
+
+          //          this.recognition.addEventListener(eventName, this.fire.bind(this, eventName));
+        },
+
+        bindResult : function() {
           var that = this;
 
-          this.recognition.addEventListener('result', function(e) {
+          /**
+           this.recognition.addEventListener('result', function(e) {
 
-              for (var i = e.resultIndex; i < e.results.length; ++i) {
-                  that.text += e.results[i][0].transcript;
-                  e.result = that.text;
-                  that.broadcast('result', e.results[i][0].transcript);
-              }
+           for (var i = e.resultIndex; i < e.results.length; ++i) {
+           that.text += e.results[i][0].transcript;
+           e.result = that.text;
+           that.broadcast('result', e.results[i][0].transcript);
+           }
 
-              that.fire('result', e);
-          });
-      }
-    });
-  </script>
+           that.fire('result', e);
+           });
+           */
+        }
+      });
+    </script>
 </polymer-element>
