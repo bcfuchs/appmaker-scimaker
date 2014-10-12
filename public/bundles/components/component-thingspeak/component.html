@@ -1,4 +1,4 @@
-<polymer-element name="ceci-thingspeak" attributes="volume playsound fontsize textcolor buttoncolor label value" label="Send to THingspeak" value="Press" extends="ceci-element"
+<polymer-element name="ceci-thingspeak" attributes="volume playsound fontsize textcolor buttoncolor label value" label="Thingspeak Geo" value="Press" extends="ceci-element"
   textcolor="#ffffff"
   fontsize="18"
   volume=".5"
@@ -8,7 +8,7 @@
     {
       "tags": ["button", "click", "tap"],
       "thumbnail": "./thumbnail.png",
-      "description": "Send data to thingspeak",
+      "description": "Send data to thingspeak with lat lon",
       "name": "Thingspeak",
       "broadcasts": {
         "click": {
@@ -18,6 +18,14 @@
         }
       },
       "listeners": {
+        "lat": {
+           "label":"latitdue",
+           "description":"lat"
+    },
+      "lon": {
+           "label":"longitude",
+           "description":"lon"
+    },
         "field0": {
            "label":"field0",
            "description":"field0"
@@ -155,7 +163,7 @@ data: your apikey.
           // exc. if undefined? prob just leave, let caller cope, push error
           lat = pos.coords.latitude
           lon = pos.coords.longitude;
-	    	console.log("latlon: " + lat + " " + lon);
+	      console.log("latlon: " + lat + " " + lon);
           //    that.broadcast('lat',pos.coords.latitude);
           //    that.broadcast('lon',pos.coords.longitude);
 
@@ -197,7 +205,7 @@ data: your apikey.
         attached : function() {
           this.super();
           var that = this;
-          this.setGeo(function(){that.getGeo();});
+     //     this.setGeo(function(){that.getGeo();});
         },
         pressdown : function() {
           this.super();
@@ -218,8 +226,28 @@ data: your apikey.
          
           this.submit();
         },
+        lat : function(e) {
+          this.$.lat = e;
+          
+
+        },
+        lon : function(e) {
+          this.$.lon = e;
+          
+
+        },
         field0 : function(e) {
           this.$.field0 = e;
+          
+
+        },
+        field3 : function(e) {
+          this.$.field3 = e;
+          
+
+        },
+        field4 : function(e) {
+          this.$.field4 = e;
           
 
         },
@@ -228,7 +256,7 @@ data: your apikey.
         submit : function() {
           console.log("thingspeak: submit");
           var that = this;
-        var send2ts = function(geo) {
+        var send2ts = function() {
        // instructions: 
        // create the first two fields for thingspeak as lat lon
           
@@ -238,13 +266,18 @@ data: your apikey.
           //TODO -- this could be used to inject code!
           var apikey = that.attributes.apikey.value;
           console.log("send2ts");
+          // get current geo position
+          // at the moment this is only set on start. 
+          var lat =  that.$.lat; 
+          var lon =  that.$.lon;
           var url = 'http://api.thingspeak.com/update?key='+apikey;
-          url = url + '&field1='+ encodeURIComponent(that.$.field0) + "&field3="+geo.lat+"&field4="+geo.lon;
-	      console.log(url);
+          url = url + '&field1='+ encodeURIComponent(that.$.field0) + "&field3="+lat+"&field4="+lon;
+          console.log(url);
+	    
           $.ajax(url);
         }
-         
-          this.setGeo(function(geo){send2ts(geo)});
+         send2ts();
+        //  this.setGeo(function(geo){send2ts(geo)});
           
         }
       });
