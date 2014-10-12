@@ -1,0 +1,233 @@
+<polymer-element name="ceci-geo-location" attributes="continuous text state grammar freespeech" extends="ceci-element">
+  <ceci-definition>
+    {
+      "tags": ["text", "utility"],
+      "thumbnail": "./thumbnail.png",
+      "description": "geolocation",
+      "name": "Geolocation",
+      "broadcasts": {
+        "lat": {
+          "label": "latitude",
+          "description": "geolocation.latitude"
+        },
+    "lon": {
+          "label": "longitude",
+          "description": "geolocation long"
+        },
+        "result": {
+          "label": "Result",
+          "description": "geolocation."
+        }
+      },
+      "listeners": {
+        "getLocation": {
+          "label": "getLocation",
+          "description": "get a new location fix"
+        }
+      },
+	"attributes": {
+
+	      "grammar": {
+        	  "label": "Grammar",
+	          "description": "Grammar.",
+	          "editable": "textarea"
+	      } 
+
+	}
+    }
+  </ceci-definition>
+  <template>
+    <style>
+      :host {
+        display: block;
+        width: 100%;
+        min-height: 2em;
+      }
+      :host #state-message {
+        color: white;
+        visibility: hidden;
+        text-align: center;
+        font-size: 1.5em;
+      }
+
+      :host #result-text {
+        padding: .2em;
+      }
+
+      :host([state="recording"],[state="decoding"]) #state-message {
+        visibility: visible;
+      }
+      :host #geo-lat {
+      display: block;
+      background-color: green;
+            height: 20px;
+      color: white;
+      }
+      :host #geo-lon {
+      display: block;
+      background-color: blue;
+      position: relative;
+      top: 100px;
+      height: 20px;
+            color: white;
+      }
+      :host([state="recording"]) #state-message {
+        background-color: darkred;
+      }
+
+      :host([state="decoding"]) #state-message {
+        background-color: gold;
+      }
+
+      :host(:not([state="idle"])) #result-text {
+        visibility: hidden;
+      }
+
+      :host #container {
+        position: relative;
+      }
+
+      :host #container div {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+      }
+    </style>
+
+    <div id="container">
+
+      <div id="geo-lat">{{lat}}</div>
+      <div>lat lon</div>
+            <div id="state-message">{{state}}</div>
+      <div id="result-text">{{text}}</div>
+      <hr/>
+      <div id="geo-lon">{{lon}}</div>
+    </div>
+    <shadow></shadow>
+    <content></content>
+  </template>
+  <script>
+    Polymer('ceci-geo-location', {
+      resultantText: '',
+      state: 'idle',
+      continuous: false,
+      text: '',
+ /* -- Lifecycle ------------------------------------------------- */
+    /* PLAN  : get the current geoloc via navigator.geolocation.getCurrentPosition */
+    /*    add it to the html and emit it via a channel  */ 
+    /* 
+    
+    
+    */
+      created: function() {
+    
+    /* http://www.html5rocks.com/en/tutorials/geolocation/trip_meter/ */
+
+    // geo stuff
+    var that = this;
+
+
+    // make a collection
+    // note addCollection should return a collection but doesnt
+
+    var collections = document.querySelector("ceci-collections");
+    var geo;
+
+    // getCollection throws undefined function if collection isn't there!
+    try {
+       geo = collections.getCollection("geo");    
+    }
+    catch(e) {
+       console.error(e);
+    }
+
+    // make geo if it's not there.
+    // exc: it's been created by another component--we really need a system service here!
+    if (!geo) {
+       console.log("adding geo");
+       collections.addCollection('geo')
+       geo = collections.getCollection("geo");
+    };
+
+    // add fields
+    geo.addField("lat");
+    geo.addField("lon");
+
+    // get geo and add cell data
+
+    window.navigator.geolocation.getCurrentPosition(function(pos) {
+       var lat,lon;
+
+    // exc. if undefined? prob just leave, let caller cope, push error
+       lat = pos.coords.latitude 
+       lon = pos.coords.longitude;
+
+    //    that.broadcast('lat',pos.coords.latitude);
+    //    that.broadcast('lon',pos.coords.longitude);
+
+    // add cell data
+
+       geo.addItem({"lat":lat,"lon":lon});
+       geo.saveData();
+
+    });
+
+
+      },    // created
+
+      ready: function () {
+        this.super();
+        
+         [
+              'start',
+              'error',
+              'end'
+          ].forEach(this.propagateEvent.bind(this));
+          this.bindResult();
+ 
+
+    var that = this;
+
+
+    
+      },
+      start: function () {
+        this.recognition.start();
+        this.state = 'recording';
+      },
+      setgrammar: function () {
+        console.log('set aki' + this.getAttribute('grammar'));
+        this.grammarlist.addFromString  ( this.getAttribute('grammar') , 1 );
+        this.recognition.grammars = this.grammarlist;        
+      },      
+      stop: function () {
+        this.recognition.stop();
+        this.state = 'decoding';
+      },
+      abort: function () {
+        this.recognition.abort();
+        this.state = 'idle';
+      },
+      /* -- Events ---------------------------------------------------- */
+      propagateEvent: function (eventName) {
+          this.recognition.addEventListener(eventName, this.fire.bind(this, eventName));
+      },
+      bindResult: function() {
+          var that = this;
+
+          this.recognition.addEventListener('result', function(e) {
+
+              for (var i = e.resultIndex; i < e.results.length; ++i) {
+                  that.text += e.results[i][0].transcript;
+                  e.result = that.text;
+                  that.broadcast('result', e.results[i][0].transcript);
+              }
+
+              that.fire('result', e);
+          });
+      }
+    });
+  </script>
+</polymer-element>
