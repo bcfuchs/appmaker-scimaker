@@ -152,6 +152,9 @@ module.exports = function (store, viewsPath, urlManager, makeAPIPublisher, dbcon
             },
             "default_locale": "en",
             "permissions": {
+              "geolocation" : {
+                "description":"You can run, but you can't hide"
+               },
               "audio-capture": {
                 "description": "We'd like to use your microphone"
               },
@@ -160,7 +163,7 @@ module.exports = function (store, viewsPath, urlManager, makeAPIPublisher, dbcon
               }
             }
           };
-
+       
           var iconFiles = Object.keys(icons).map(function (iconSize) {
             var icon = icons[iconSize];
             manifestJSON.icons[iconSize] = urlManager.createIconPath(folderName, icon.filename);
