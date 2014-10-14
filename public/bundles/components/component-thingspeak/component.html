@@ -1,4 +1,4 @@
-<polymer-element name="ceci-thingspeak" attributes="volume playsound fontsize textcolor buttoncolor label value" label="Thingspeak Geo" value="Press" extends="ceci-element"
+<polymer-element name="ceci-thingspeak" attributes="volume playsound fontsize textcolor buttoncolor label labelSubmitted value" labelSubmitted="Super!" label="Send to Thingspeak" value="Press" extends="ceci-element"
   textcolor="#ffffff"
   fontsize="18"
   volume=".5"
@@ -19,7 +19,7 @@
       },
       "listeners": {
         "lat": {
-           "label":"latitdue",
+           "label":"latitude",
            "description":"lat"
     },
       "lon": {
@@ -61,6 +61,13 @@
           "description": "Text shown on the button.",
           "editable": "text",
           "default": "Send to thingspeak",
+          "listener": true
+        },
+         "labelSubmitted": {
+          "label": "Submitted Label",
+          "description": "Text shown on the button after it's pressed.",
+          "editable": "text",
+          "default": "Super!",
           "listener": true
         },
         "value": {
@@ -121,82 +128,8 @@ data: your apikey.
 */
 
     Polymer('ceci-thingspeak', {
-      setGeo : function(cb) {
-        this.super();
-        console.log("->setGeo");
-        /* http://www.html5rocks.com/en/tutorials/geolocation/trip_meter/ */
-
-        // geo stuff
-        var that = this;
-
-        // make a collection
-        // note addCollection should return a collection but doesnt
-
-        var collections = document.querySelector("ceci-collections");
-        var geo;
-
-        // getCollection throws undefined function if collection isn't there!
-        try {
-          geo = collections.getCollection("geo");
-        } catch (e) {
-          console.error(e);
-        }
-
-        // make geo if it's not there.
-        // exc: it's been created by another component--we really need a system service here!
-        if (!geo) {
-          console.log("adding geo");
-          collections.addCollection('geo')
-          geo = collections.getCollection("geo");
-        }
-        
-
-        // add fields
-        geo.addField("lat");
-        geo.addField("lon");
-
-        // get geo and add cell data
-		console.log("about to get geodata");
-        window.navigator.geolocation.getCurrentPosition(function(pos) {
-          var lat, lon;
-
-          // exc. if undefined? prob just leave, let caller cope, push error
-          lat = pos.coords.latitude
-          lon = pos.coords.longitude;
-	      console.log("latlon: " + lat + " " + lon);
-          //    that.broadcast('lat',pos.coords.latitude);
-          //    that.broadcast('lon',pos.coords.longitude);
-
-          // add cell data
-
-          geo.addItem({
-            "lat" : lat,
-            "lon" : lon
-          });
-          this.$.lat = lat;
-          this.$.lon = lon;
-          geo.saveData();
-        
-	      cb({"lat":lat,"lon":lon});
-        });
-      }, //setGeo
-      getGeo : function() {
-          this.super();
-          // Do the geo stuff when element is inserted. 
-          // get the geo information
-          console.log("getting geo info in thingspeak 2");
-          var collections = document.querySelector("ceci-collections");
-          // probably we should set the name of the collection in appdata. 
-          var geo = collections.getCollection("geo");
-          console.log(geo);
-          var lat = geo.getData()[0].lat;
-          var lon = geo.getData()[0].lon;
-          console.log("lat : " + lat);
-          console.log("lon : " + lon);
-          this.$.lat = lat;
-          this.$.lon = lon;
-        },
-
+      isPressed:false,
+       
         ready : function() {
           this.super();
           this.loadSound("tap", "sounds/tap.mp3");
@@ -213,6 +146,7 @@ data: your apikey.
             this.playSound("tap", this.volume);
           }
           this.$.buttonwrapper.classList.add("pressdown");
+          this.submit();
           this.broadcast('click', this.getAttribute('value'));
         },
         pressup : function() {
@@ -220,6 +154,22 @@ data: your apikey.
           this.$.buttonwrapper.classList.remove("fade");
           this.$.buttonwrapper.offsetWidth = this.$.buttonwrapper.offsetWidth;
           this.$.buttonwrapper.classList.add("fade");
+          var lb = this.label;
+          this.label = this.labelSubmitted;
+          var bc = this.buttoncolor;
+          this.buttoncolor = "green";
+          
+          var that = this;
+          if (!this.isPressed) {
+            this.isPressed = true;
+          window.setTimeout(function(){
+      	      that.buttoncolor = bc;
+      	      that.label = lb;
+        	  that.isPressed = false;
+          },1000);
+          }
+          
+          
         },
         sendData : function() {
           console.log("sendData");
@@ -228,57 +178,78 @@ data: your apikey.
         },
         lat : function(e) {
           this.$.lat = e;
-          
-
+        
         },
         lon : function(e) {
           this.$.lon = e;
           
-
         },
         field0 : function(e) {
           this.$.field0 = e;
-          
-
+         
         },
         field3 : function(e) {
           this.$.field3 = e;
-          
-
+        
         },
         field4 : function(e) {
           this.$.field4 = e;
-          
-
         },
         // various components set data at ready
         // user clicks here or a separate button to submit
         submit : function() {
           console.log("thingspeak: submit");
           var that = this;
-        var send2ts = function() {
-       // instructions: 
-       // create the first two fields for thingspeak as lat lon
           
-         /*  var field1 = this.$.field1.value;
-          var field2 = this.$.field2.value;
-          var field3 = this.$.field3.value; */
-          //TODO -- this could be used to inject code!
-          var apikey = that.attributes.apikey.value;
-          console.log("send2ts");
-          // get current geo position
-          // at the moment this is only set on start. 
-          var lat =  that.$.lat; 
-          var lon =  that.$.lon;
-          var url = 'http://api.thingspeak.com/update?key='+apikey;
-          url = url + '&field1='+ encodeURIComponent(that.$.field0) + "&field3="+lat+"&field4="+lon;
-          console.log(url);
-	    
-          $.ajax(url);
-        }
-         send2ts();
-        //  this.setGeo(function(geo){send2ts(geo)});
-          
+          var send2ts = function() {
+	 
+	          
+	          var apikey = that.attributes.apikey.value;
+	          
+	          // get current geo position
+	          // at the moment this is only set on start. 
+	          var lat =  that.$.lat; 
+	          var lon =  that.$.lon;
+	          var url = 'http://api.thingspeak.com/update?key='+apikey;
+	          
+	          // build the url
+	          
+	          url = url 
+	          + '&field1='
+	          +lat
+	          + '&field2='
+	          +lon;
+	          // component field0 = thingspeak field3
+	          if (that.field0) {
+	          	url += "&field3="
+	          	+ encodeURIComponent(that.$.field0);
+	          }
+	          if (that.field1) {
+	          	url += "&field4="
+	          	+ encodeURIComponent(that.$.field1);
+	          }
+	          if (that.field2) {
+	          	url += "&field5="
+	          	+ encodeURIComponent(that.$.field2);
+	          }
+	          if (that.field3) {
+	          	url += "&field6="
+	          	+ encodeURIComponent(that.$.field3);
+	          }
+	          if (that.field4) {
+	            	url += "&field7="
+	            	+ encodeURIComponent(that.$.field4);
+	            }
+	            if (that.field5) {
+	            	url += "&field8="
+	            	+ encodeURIComponent(that.$.field5);
+	            }
+	            
+	          console.log(url); 
+	          $.ajax(url);
+        };
+        
+        send2ts();
         }
       });
     </script>
