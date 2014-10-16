@@ -1,4 +1,4 @@
-<polymer-element name="ceci-chart" extends="ceci-element" attributes="unit increment value collectionname">
+<polymer-element name="ceci-chart" extends="ceci-element" attributes="dataUrl unit increment value collectionname">
   <script src="vendor/chartjs/Chart.min.js"></script>
   <ceci-definition>
     {
@@ -20,7 +20,14 @@
           "description": "The name of the collection to store the value",
           "label": "Collection Name",
           "editable": "text"
-        }
+        },
+    "dataUrl":{
+      "description": "url for chart data",
+          "label": "Data url",
+          "editable": "text",
+          "listener":true
+
+    }
       }
     }
   </ceci-definition>
@@ -34,26 +41,13 @@
   <tags></tags>
   <script>
     Polymer("ceci-chart", {
+    dataUrl:"",
       ready: function() {
         this.super();
         var canvas = this.$.canvas;
         var ctx = canvas.getContext('2d');
         this.chart = new Chart(ctx);
 
-        localStorage['hack-collection-times'] = JSON.stringify({
-          "6/2/2014":20,
-          "6/3/2014":20,
-          "6/4/2014":23,
-          "6/5/2014":25,
-          "6/6/2014":30,
-          "6/7/2014":32,
-          "6/8/2014":35,
-          "6/9/2014":36,
-          "6/10/2014":33,
-          "6/11/2014":25,
-          "6/12/2014":34,
-          "6/13/2014":60
-        });
 
         // this needs to happen on the next tick
         this.async(this.graph);
@@ -95,10 +89,24 @@
         }
         return { animation: false, scaleOverride: true, scaleSteps: steps, scaleStepWidth: stepWidth, scaleStartValue: 0 };
       },
-      graph: function() {
-        var data = this.getData();
-        this.chart.Line(data, this.getIntegerScaleParameters(data));
+      graph: function(){
+      var online = window.navigator.onLine;
+      var that = this;
+      if (this.dataUrl !== ""  && online) {    
+         var url = this.dataUrl;
+         console.log("go " + url);
+      // it would be better not to use localstorage to write/read
+        var add_data = function(d) {   localStorage['hack-collection-times'] = JSON.stringify(d);
+  
       }
+     $.ajax(url).done(add_data);
+   }
+        console.log(url);
+        var data = this.getData();
+        this.chart.Line(data, that.getIntegerScaleParameters(data));      
+   
+      }
+
     });
   </script>
 </polymer-element>
