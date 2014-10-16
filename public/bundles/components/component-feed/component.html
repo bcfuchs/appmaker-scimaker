@@ -1,0 +1,187 @@
+<polymer-element name="ceci-feed-format" attributes="continuous text state label feedUrl  lat lon error value"  extends="ceci-element">
+  <ceci-definition>
+    {
+      "tags": ["geo", "utility"],
+      "thumbnail": "./thumbnail.png",
+      "description": "Format a feed item as a list. ",
+      "name": "FeedFormatter", 
+      "broadcasts": {
+        "error": {
+          "label": "error",
+          "description": "feed errors"
+        },
+        "items": {
+        "label": "items",
+        "description": "emeit items"
+        }
+      },
+      "listeners": {
+ 	     "refresh": {
+ 	     	"label": "refresh",
+                 "description": "read the feed"
+      		}
+      
+      },
+	"attributes": {
+          "label": {
+           "label": "Labels",
+          "description": "Text shown on the button. Do we need this? ",
+          "editable": "text",
+          "listener": false
+        },
+        
+        "feedUrl": {
+        "label": "feed Url",
+        "description": "Url of feed to format",
+        "editable":"text",
+         "listener": true
+        }
+
+	   }
+    }
+  </ceci-definition>
+  <template>
+    <style>
+      :host {
+        display: block;
+        width: 100%;
+        min-height: 2em;
+      }
+      :host #state-message {
+        color: white;
+        visibility: hidden;
+        text-align: center;
+        font-size: 1.5em;
+      }
+
+      :host #result-text {
+        padding: .2em;
+      }
+
+      :host([state="recording"],[state="decoding"]) #state-message {
+        visibility: visible;
+      }
+      :host #geo-lat2 {
+      position: relative;
+      top: 100px;
+      display: block;
+      background-color: green;
+      height: 20px;
+      color: white;
+      }
+      :host #geo-lon2 {
+      display: block;
+      background-color: white;
+      //position: relative;
+      //top: 100px;
+      height: 20px;
+            color: white;
+      }
+      :host([state="recording"]) #state-message {
+        background-color: darkred;
+      }
+
+      :host([state="decoding"]) #state-message {
+        background-color: gold;
+      }
+
+      :host(:not([state="idle"])) #result-text {
+        visibility: hidden;
+      }
+
+      :host #container {
+        position: relative;
+      }
+
+      :host #container div {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+      }
+    </style>
+
+    <div id="container">
+
+    </div>
+    <shadow></shadow>
+    <content>Feed Formatter</content>
+  </template>
+  <script>
+    Polymer('ceci-feed-format', {
+     
+      state: 'idle',
+      continuous: false,
+      lat: 0,
+      lon: 0,
+      text: '',
+      watchId:0,
+      feedUrl:"http://localhost/~bfuchs/a.json",
+      feedContent:"",
+     
+
+      
+     stopGeo: function() {
+       this.super();
+       
+       !this.watchId || window.navigator.geolocation.clearWatch(this.watchId);
+        	
+     },
+    processFeed: function(e) {
+      console.log(e);
+      // emit an item per k/v
+      var items = e;
+      var that = this;
+      $.each(items,function(k,v){
+        that.broadcast("items",k+": "+v);
+      });
+      //this.broadcast("items","<b>hi</b>");
+      //this.broadcast("items","how");
+      //this.broadcast("items","are");
+    },
+    refresh: function() {
+      
+      console.log("refresh: "+ this.feedUrl);
+      var that = this;
+      $.ajax({url:this.feedUrl,
+          error:function(xhr,status,e){
+            console.log(e);
+            that.broadcast("error",e);
+            }
+      }).done(function(data){ that.processFeed(data)});
+},
+   
+
+     formatFeed: function() {
+
+//        this.feedURL = 
+
+    },
+      
+        created : function() {
+   
+
+        }, // created
+
+        ready : function() {
+          this.super();
+         
+  //        [ 'lat', 'lon', 'error' ].forEach(this.propagateEvent.bind(this));
+  //       this.bindResult();
+
+		
+          
+
+        },
+      
+       attached: function() {
+         this.super();
+         console.log("attached");
+         
+       
+         
+       }
+      });
+    </script>
+</polymer-element>
