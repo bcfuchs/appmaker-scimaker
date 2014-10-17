@@ -5,7 +5,7 @@
       "name": "Line Graph",
       "thumbnail": "./thumbnail.png",
       "description": "Shows a line graph of a data set over time.",
-      "tags": ["asdf"],
+      "tags": ["chart","number"],
       "broadcasts": {
       },
       "listeners": {
@@ -41,7 +41,7 @@
   <tags></tags>
   <script>
     Polymer("ceci-chart", {
-    dataUrl:"",
+    dataUrl:"/bundles/components/component-chart/chart.json",
       ready: function() {
         this.super();
         var canvas = this.$.canvas;
@@ -50,11 +50,17 @@
 
 
         // this needs to happen on the next tick
-        this.async(this.graph);
+           this.async(this.graph);
       },
-      getData: function() {
+   
+    // ideally want [keys,data1,data2,...]
+    getData: function() {
         var key = 'hack-collection-' + this.collectionname;
         var data = JSON.parse(localStorage[key]);
+        return this.processData(data);
+    },
+      processData: function(data) {
+
 
         var values = [];
         var keys = Object.keys(data);
@@ -94,8 +100,6 @@
       var that = this;
       if (this.dataUrl !== ""  && online) {    
          var url = this.dataUrl;
-         console.log("go " + url);
-      // it would be better not to use localstorage to write/read
         var add_data = function(d) {   localStorage['hack-collection-times'] = JSON.stringify(d);
   
       }
