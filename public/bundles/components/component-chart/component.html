@@ -1,4 +1,4 @@
-<polymer-element name="ceci-chart" extends="ceci-element" attributes="dataUrl fillColorHex unit increment value collectionname" fillColorHex="#cc2424">
+<polymer-element name="ceci-chart" extends="ceci-element" attributes="dataUrl fillColorHex unit increment value collectionname" dataUrl="/bundles/components/component-chart/chart.json" fillColorHex="#54f693">
   <script src="vendor/chartjs/Chart.min.js"></script>
   <ceci-definition>
     {
@@ -83,9 +83,9 @@
           return "rgba(" + r + "," + g + "," + b + ","+opacity+")";
         },
         //http://jsfiddle.net/Mottie/xcqpF/1/light/
-        
+       // + opacity 
         rgb2hex : function(rgb) {
-          rgb = rgb.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
+          rgb = rgb.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,\s+]?(\d+)[\s+]?/i);
           return (rgb && rgb.length === 4) ? "#" + ("0" + parseInt(rgb[1], 10).toString(16)).slice(-2)
               + ("0" + parseInt(rgb[2], 10).toString(16)).slice(-2)
               + ("0" + parseInt(rgb[3], 10).toString(16)).slice(-2) : '';
@@ -98,13 +98,15 @@
 	      	this.fillColor = this.hex2rgb(this.fillColorHex,1.000);
 	     }
 	      
-          var values = [];
-          var keys = Object.keys(data);
 
-          for ( var i in keys) {
-            values.push(data[keys[i]]);
-          }
-
+	     var values = [];
+         var keys = [];  
+ 
+         for (var i =0; i < data.length; i++) {
+	         keys.push(data[i]['k']);
+	         values.push(data[i]['v']);
+	       }
+         
           return {
             labels : keys,
             datasets : [ {
