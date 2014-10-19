@@ -1,4 +1,4 @@
-<polymer-element name="ceci-chart" extends="ceci-element" attributes="dataUrl fillColorHex unit increment value collectionname" dataUrl="/bundles/components/component-chart/chart.json" fillColorHex="#54f693">
+<polymer-element name="ceci-chart" extends="ceci-element" attributes="dataUrl fillColorHex unit increment value collectionname data" dataUrl="/bundles/components/component-chart/chart.json" fillColorHex="#54f693">
   <script src="vendor/chartjs/Chart.min.js"></script>
   <ceci-definition>
     {
@@ -10,7 +10,7 @@
       },
       "listeners": {
         "graph": {
-          "description": "Graphs available data.",
+          "description": "Graphs available data. If input is an object with key 'data', uses this array to display data",
           "label": "Graph",
           "default": true
         }
@@ -91,22 +91,22 @@
               + ("0" + parseInt(rgb[3], 10).toString(16)).slice(-2) : '';
         },
         processData : function(data) {
-          // set the fill color
-	     this.fillColor = this.hex2rgb(this.fillColorHex,1.000);
-	      
-	     if (this.fillColorHex !== "") {
-	      	this.fillColor = this.hex2rgb(this.fillColorHex,1.000);
-	     }
-	      
+      
+      // set the fill color
+          this.fillColor = this.hex2rgb(this.fillColorHex, 1.000);
 
-	     var values = [];
-         var keys = [];  
- 
-         for (var i =0; i < data.length; i++) {
-	         keys.push(data[i]['k']);
-	         values.push(data[i]['v']);
-	       }
-         
+          if (this.fillColorHex !== "") {
+            this.fillColor = this.hex2rgb(this.fillColorHex, 1.000);
+          }
+
+          var values = [];
+          var keys = [];
+
+          for (var i = 0; i < data.length; i++) {
+            keys.push(data[i]['k']);
+            values.push(data[i]['v']);
+          }
+
           return {
             labels : keys,
             datasets : [ {
@@ -139,7 +139,8 @@
           };
         },
 
-        graph : function() {
+       
+      graph : function(inputData) {
           var online = window.navigator.onLine;
           var that = this;
           var add_data = function(d) {
@@ -148,11 +149,18 @@
             var key = that.keyPrefix + that.collectionname;
             localStorage[key] = JSON.stringify(d);
           }
-          // use stored data when offline
-          if (this.dataUrl !== "" && online) {
-            $.ajax(this.dataUrl).done(add_data);
-          } else {
-            add_data();
+          // if data comes in on the channel, use that
+          // if not, use the url 
+          if (inputData.data) {
+            add_data(inputData.data);
+          } 
+          else {
+            // use stored data when offline
+            if (this.dataUrl !== "" && online) {
+              $.ajax(this.dataUrl).done(add_data);
+            } else {
+              add_data();
+            }
           }
         }
       });
