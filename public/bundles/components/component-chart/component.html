@@ -141,26 +141,25 @@
         },
 
        
-      graph : function(da) {
+      
+      graph : function(inputData) {
           var online = window.navigator.onLine;
           var that = this;
-          var inputData = da;
-        
-          console.log(da);
-         var add_data = function(d) {
+
+          var add_data = function(d) {
             var data = that.processData(d);
             that.chart.Line(data, that.getIntegerScaleParameters(data));
             var key = that.keyPrefix + that.collectionname;
             localStorage[key] = JSON.stringify(d);
           }
+          
           // if data comes in on the channel, use that
           // if not, use the url 
+          var sliceSize = 20;
           if (inputData.data) {
-            var d = inputData.data.splice(inputData.length-20,20);
-            console.log(d.length);
+            var d = inputData.data.splice(inputData.length - sliceSize, sliceSize);
             add_data(d);
-          } 
-          else {
+          } else {
             // use stored data when offline
             if (this.dataUrl !== "" && online) {
               $.ajax(this.dataUrl).done(add_data);
