@@ -1,0 +1,16 @@
+{
+	"ceci-ts5": "Button",
+	"ceci-ts5/description": "Responds to clicks and taps.",
+	"ceci-ts5/attributes/label": "Press Me",
+	"ceci-ts5/attributes/label/label": "Label",
+	"ceci-ts5/attributes/label/description": "Text shown on the button.",
+	"ceci-ts5/attributes/value": "Press",
+	"ceci-ts5/attributes/value/label": "Broadcast Value",
+	"ceci-ts5/attributes/value/description": "Value broadcast by the button when pressed.",
+	"ceci-ts5/attributes/textcolor/label": "Text Color",
+	"ceci-ts5/attributes/textcolor/description": "Color of the text on the button's label.",
+	"ceci-ts5/attributes/buttoncolor/label": "Button Color",
+	"ceci-ts5/attributes/buttoncolor/description": "Background color of the button.",
+	"ceci-ts5/attributes/buttonactivecolor/label": "Button Active Color",
+	"ceci-ts5/attributes/buttonactivecolor/description": "Background color of the button while it is being pressed."
+}

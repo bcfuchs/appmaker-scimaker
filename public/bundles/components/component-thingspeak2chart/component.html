@@ -1,0 +1,102 @@
+<polymer-element name="ceci-ts5" attributes="type dataUrl"   extends="ceci-element">
+  <!--  Sample client-side conversion of thingspeak data .. not v. nice thing to do to thingspeak, tho -->
+  <ceci-definition>
+    {
+      "tags": ["data", "convert", "db"],
+      "thumbnail": "./thumbnail.png",
+      "description": "convert thingspeak data to chart data",
+      "name": "Thingspeak converter",
+      "broadcasts": {
+         "jsonOut": {
+          "label": "jsonOut",
+          "description": "data for chart",
+          "default": true
+        }
+      },
+      "listeners": {},
+      "attributes": {
+           "dataUrl": {
+          "label": "dataUrl",
+          "description": "url of thinkgspeak feed",
+          "editable": "text",
+          "listener": true
+        },
+          "type": {
+          "label": "type",
+          "description": "name of thingspeak field to chart",
+          "editable": "text",
+          "listener": true
+        }
+        
+      }
+    }
+  </ceci-definition>
+  <template>
+    <link rel="stylesheet" href="component.css"></link>
+     <div>
+    </div>
+    <shadow></shadow>
+
+
+  </template>
+  <script>
+    Polymer('ceci-ts5', {
+      ready: function () {
+        this.super();
+
+      },
+      attached : function(){
+        this.super();
+        this.ts2chart(); // get the data now
+        var that = this;
+        window.addEventListener('cardShown', function(e) {
+      // when the card is in focus fire this event.
+      //TODO cache with an interval check
+        that.ts2chart();
+
+    });
+      },
+   
+      ts2chart : function() {
+
+          var that = this;
+          var type = this.type;
+          var out = [];
+          var transform = function(d) {
+            var field;
+            // get the field
+            for ( var item in d.channel) {
+              var m = d.channel[item];
+              if (typeof (m) == 'string') {
+                if (m.match(new RegExp(type, 'g'))) {
+                  field = item;
+                }
+              }
+            }
+            // make chart json
+            for (var i = 0; i < d.feeds.length; i++) {
+              for ( var item in d.feeds[i]) {
+                if (item.match(new RegExp(field))) {
+
+                  out.push({
+                    // make the timestamp readable
+                    k : d.feeds[i].created_at.replace(/\d+-(\d+)-(\d+)T(\d+:\d\d).*/, "$1.$2 $3"),
+                    v : parseFloat(d.feeds[i][item])
+                  });
+                }
+              }
+            }
+            that.broadcast('click', {
+              data : out
+            });
+          };
+
+          if (this.dataUrl) {
+            $.ajax(this.dataUrl).done(transform);
+          }
+
+        },
+
+      });
+    </script>
+</polymer-element>
