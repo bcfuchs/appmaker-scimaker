@@ -1,0 +1,173 @@
+<polymer-element name="ceci-chart-sci" extends="ceci-element" attributes="dataUrl fillColorHex unit increment value collectionname data graph" dataUrl="/bundles/components/component-chart/chart.json" fillColorHex="#54f693">
+  <script src="vendor/chartjs/Chart.min.js"></script>
+  <ceci-definition>
+    {
+      "name": "Line Graph",
+      "thumbnail": "./thumbnail.png",
+      "description": "Shows a line graph of a data set over time.",
+      "tags": ["chart","number"],
+      "broadcasts": {
+      },
+      "listeners": {
+        "graph": {
+          "description": "Graphs available data. If input is an object with key 'data', uses this array to display data",
+          "label": "Graph",
+          "default": true
+        }
+      },
+      "attributes": {
+        "collectionname": {
+          "description": "The name of the collection to store the value",
+          "label": "Collection Name",
+          "editable": "text"
+        },
+        "fillColorHex":{
+        "description": "fill color of chart",
+          "label": "chart fill color",
+          "editable": "color"
+         
+        },
+    "dataUrl":{
+      "description": "url for chart data",
+          "label": "Data url",
+          "editable": "text",
+          "listener":true
+
+    }
+      }
+    }
+  </ceci-definition>
+  <template>
+    <link rel="stylesheet" href="component.css">
+    <div class="wrapper">
+      <canvas id="canvas" width="310" height="400"></canvas>
+    </div>
+    <shadow></shadow>
+  </template>
+  <tags></tags>
+  <script>
+  
+      Polymer("ceci-chart-sci", {
+        dataUrl : "/bundles/components/component-chart/chart.json",
+        keyPrefix : "hack-collection-",
+        fillColor : "",
+        fillColorHex : "",
+        strokeColor: "rgba(30, 151, 29, 1.0000)",
+        ready : function() {
+          this.super();
+          var canvas = this.$.canvas;
+          var ctx = canvas.getContext('2d');
+          this.chart = new Chart(ctx);
+
+          // this needs to happen on the next tick
+          this.async(this.graph);
+        },
+
+        // ideally want [keys,data1,data2,...]
+        getData : function() {
+          var key = this.keyPrefix + this.collectionname;
+          var data = JSON.parse(localStorage[key]);
+          return this.processData(data);
+        },
+        // http://jsfiddle.net/ZsrM6/
+        // + opacity factor 
+      	hex2rgb : function(hex,opacity) {
+          if (hex.lastIndexOf('#') > -1) {
+            hex = hex.replace(/#/, '0x');
+          } else {
+            hex = '0x' + hex;
+          }
+          var r = hex >> 16;
+          var g = (hex & 0x00FF00) >> 8;
+          var b = hex & 0x0000FF;
+          return "rgba(" + r + "," + g + "," + b + ","+opacity+")";
+        },
+        //http://jsfiddle.net/Mottie/xcqpF/1/light/
+       // + opacity 
+        rgb2hex : function(rgb) {
+          rgb = rgb.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,\s+]?(\d+)[\s+]?/i);
+          return (rgb && rgb.length === 4) ? "#" + ("0" + parseInt(rgb[1], 10).toString(16)).slice(-2)
+              + ("0" + parseInt(rgb[2], 10).toString(16)).slice(-2)
+              + ("0" + parseInt(rgb[3], 10).toString(16)).slice(-2) : '';
+        },
+        processData : function(data) {
+      
+      // set the fill color
+          this.fillColor = this.hex2rgb(this.fillColorHex, 1.000);
+
+          if (this.fillColorHex !== "") {
+            this.fillColor = this.hex2rgb(this.fillColorHex, 1.000);
+          }
+
+          var values = [];
+          var keys = [];
+
+          for (var i = 0; i < data.length; i++) {
+            keys.push(data[i]['k']);
+            values.push(data[i]['v']);
+          }
+	
+          return {
+            labels : keys,
+            datasets : [ {
+              fillColor : this.fillColor,
+              strokeColor : this.strokeColor,
+              data : values
+            } ]
+          };
+        },
+        getIntegerScaleParameters : function(data) {
+          var maxValue = false;
+         
+          for (datasetIndex = 0; datasetIndex < data.datasets.length; ++datasetIndex) {
+            var setMax = Math.max.apply(null, data.datasets[datasetIndex].data);
+            if (maxValue === false || setMax > maxValue)
+              maxValue = setMax;
+          }
+
+          var steps = new Number(maxValue);
+          var stepWidth = new Number(1);
+          if (maxValue > 10) {
+            stepWidth = Math.floor(maxValue / 10);
+            steps = Math.ceil(maxValue / stepWidth);
+          }
+          return {
+            animation : true,
+            scaleOverride : false
+     //       scaleSteps : steps,
+     //       scaleStepWidth : stepWidth,
+    //        scaleStartValue : -30
+          };
+        },
+
+       
+      
+      graph : function(inputData) {
+          var online = window.navigator.onLine;
+          var that = this;
+
+          var add_data = function(d) {
+            var data = that.processData(d);
+            that.chart.Line(data, that.getIntegerScaleParameters(data));
+            var key = that.keyPrefix + that.collectionname;
+            localStorage[key] = JSON.stringify(d);
+          }
+          
+          // if data comes in on the channel, use that
+          // if not, use the url 
+          var sliceSize = 20;
+          if (inputData.data) {
+            var d = inputData.data.splice(inputData.data.length - sliceSize, sliceSize);
+            add_data(d);
+          } else {
+            // use stored data when offline
+            if (this.dataUrl !== "" && online) {
+              $.ajax(this.dataUrl).done(add_data);
+            } else {
+              add_data();
+            }
+          }
+        }
+      });
+    </script>
+</polymer-element>

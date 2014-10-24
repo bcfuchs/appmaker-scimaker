@@ -1,0 +1,9 @@
+{
+  "ceci-chart-sci/name": "Line Graph",
+  "ceci-chart-sci/description": "Shows a line graph of a data set over time.",
+  "ceci-chart-sci/graph/description": "Graphs available data.",
+  "ceci-chart-sci/graph/label": "Graph",
+  "ceci-chart-sci/attributes/collectionname": "times",
+  "ceci-chart-sci/attributes/collectionname/label": "Collection Name",
+  "ceci-chart-sci/attributes/collectionname/description": "The name of the collection to store the value."
+}
