@@ -1,8 +1,5 @@
 {
-  "ceci-geo/description": "Encodes voice as text!",
-  "ceci-geo/name": "Voice Recognition",
-  "ceci-geo/start/label": "Start Recording",
-  "ceci-geo/start/description": "Start recording voice data.",
-  "ceci-geo/stop/label": "Stop Recording",
-  "ceci-geo/stop/description": "Stop recording and try to decode."
+  "ceci-geo/description": "gets geolocation from phone",
+  "ceci-geo/name": "GeoLocation"
+
 }
