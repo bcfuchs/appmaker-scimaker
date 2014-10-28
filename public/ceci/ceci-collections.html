@@ -27,6 +27,7 @@
         this.fire("collectionchange", detail);
       },
       getCollection: function(name) {
+       console.log("getting collection " + name);
         return this.querySelector('ceci-collection[collectionname="'+ name + '"]');
       },
       getCollections: function() {

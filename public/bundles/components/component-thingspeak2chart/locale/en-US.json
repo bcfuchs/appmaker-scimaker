@@ -1,6 +1,6 @@
 {
-	"ceci-ts5": "Button",
-	"ceci-ts5/description": "Responds to clicks and taps.",
+	"ceci-ts5": "Thingspeak 2 chart converter",
+	"ceci-ts5/description": "Converts thingspeak feed to chart data',
 	"ceci-ts5/attributes/label": "Press Me",
 	"ceci-ts5/attributes/label/label": "Label",
 	"ceci-ts5/attributes/label/description": "Text shown on the button.",

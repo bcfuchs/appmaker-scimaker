@@ -1,8 +1,4 @@
 {
-  "ceci-voice-recognition/description": "Encodes voice as text!",
-  "ceci-voice-recognition/name": "Voice Recognition",
-  "ceci-voice-recognition/start/label": "Start Recording",
-  "ceci-voice-recognition/start/description": "Start recording voice data.",
-  "ceci-voice-recognition/stop/label": "Stop Recording",
-  "ceci-voice-recognition/stop/description": "Stop recording and try to decode."
+  "ceci-feed-format/description": "Format a feed item as a list",
+  "ceci-feed-format/name": "Feed Formatter"
 }

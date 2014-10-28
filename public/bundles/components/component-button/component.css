@@ -9,6 +9,11 @@
   padding: 5px 10px;
 }
 
+:host #map {
+height: 100px;
+
+}
+
 :host #buttonwrapper {
   cursor: pointer;
   display: block;

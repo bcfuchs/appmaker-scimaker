@@ -12,8 +12,13 @@
         },
         "items": {
         "label": "items",
-        "description": "emeit items"
+        "description": "emit items"
+        },
+        "itemlist": {
+        "label": "itemlist",
+        "description": "emit a list of items"
         }
+        
       },
       "listeners": {
  	     "refresh": {
@@ -133,6 +138,7 @@
       // emit an item per k/v
       var items = e;
       var that = this;
+      this.broadcast("itemlist",items);
       $.each(items,function(k,v){
         that.broadcast("items",k+": "+v);
       });
@@ -178,6 +184,7 @@
        attached: function() {
          this.super();
          console.log("attached");
+         this.refresh();
          
        
          

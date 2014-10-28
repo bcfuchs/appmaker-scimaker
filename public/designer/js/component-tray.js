@@ -164,6 +164,7 @@ define(
             var category = categoryNames[i].toLowerCase();
 
             var components = categories[category].bricks || [];
+
             for(var j = 0; j < components.length; j++){
               if(name === components[j]){
                 var item = DesignerTray.buildItem(name);

@@ -83,6 +83,11 @@
         this.saveData();
         this.fire("itemchange", detail);
       },
+// hack -- clearly they only want you to listen for changes, but that sucks if you miss the event...
+     getData: function() {
+        return this.data;
+
+    },
       saveData: function() {
         localStorage.setItem("ceci-collections-" + this.getAttribute("collectionname"), JSON.stringify(this.data));
       }
