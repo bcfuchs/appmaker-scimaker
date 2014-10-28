@@ -178,23 +178,15 @@
  
           },errorHandler);
         }, //geo
-       
-        
-        
-         
+                
         created : function() {
    //       this.geo(); // write lat-lon to 
-
         }, // created
 
         ready : function() {
-          this.super();
-         
+          this.super();         
   //        [ 'lat', 'lon', 'error' ].forEach(this.propagateEvent.bind(this));
-  //       this.bindResult();
-
-		
-          
+  //       this.bindResult();          
 
         },
       
