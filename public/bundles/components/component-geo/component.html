@@ -1,4 +1,4 @@
-<polymer-element name="ceci-geo-location" attributes="continuous text state label lat lon error value"  extends="ceci-element">
+<polymer-element name="ceci-geo-location" attributes="continuous text state lat lon error value"  extends="ceci-element">
   <ceci-definition>
     {
       "tags": ["geo", "utility"],
@@ -22,18 +22,11 @@
       "listeners": {
  	     "stopGeo": {
  	     	"label": "stop location watch",
-          "description": "stop watching location"
+                "description": "stop watching location"
       		}
       
       },
 	"attributes": {
-		 "label": {
-           "label": "Label",
-          "description": "Text shown on the button. Do we need this? ",
-          "editable": "text",
-          "listener": false
-        },
-        
         "showGeo": {
         "label": "Show Geolocation",
         "description": "display the current location",
