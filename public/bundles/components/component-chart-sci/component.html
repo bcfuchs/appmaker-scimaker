@@ -156,7 +156,7 @@
           // if data comes in on the channel, use that
           // if not, use the url 
           var sliceSize = 20;
-          if (inputData.data) {
+          if (inputData && inputData.data) {
             var d = inputData.data.splice(inputData.data.length - sliceSize, sliceSize);
             add_data(d);
           } else {
