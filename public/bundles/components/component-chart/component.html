@@ -49,19 +49,11 @@
           var canvas = this.$.canvas;
           var ctx = canvas.getContext('2d');
           this.chart = new Chart(ctx);
-
           // this needs to happen on the next tick
           this.async(this.graph);
         },
-
-        // ideally want [keys,data1,data2,...]
-        getData : function() {
-          var key = this.keyPrefix + this.collectionname;
-          var data = JSON.parse(localStorage[key]);
-          return this.processData(data);
-        },
         processData : function(data) {
-
+          if (!data) { return false;}
           var values = [];
           var keys = Object.keys(data);
 
@@ -79,6 +71,7 @@
           };
         },
         getIntegerScaleParameters : function(data) {
+        if (!data) { return false;}
           var maxValue = false;
           for (datasetIndex = 0; datasetIndex < data.datasets.length; ++datasetIndex) {
             var setMax = Math.max.apply(null, data.datasets[datasetIndex].data);
@@ -106,10 +99,13 @@
           var that = this;
           var add_data = function(d) {
             var data = that.processData(d);
-            that.chart.Line(data, that.getIntegerScaleParameters(data));
+            if (data) {
+               that.chart.Line(data, that.getIntegerScaleParameters(data));
+            }
             var key = that.keyPrefix + that.collectionname;
             localStorage[key] = JSON.stringify(d);
           }
+
           // use stored data when offline
           if (this.dataUrl !== "" && online) {
             $.ajax(this.dataUrl).done(add_data);
